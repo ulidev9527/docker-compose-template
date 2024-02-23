@@ -1,0 +1,37 @@
+version: '3.8'
+
+networks:
+  net_def:
+    external: true
+    driver_opts:
+      com.docker.network.bridge.enable_ip_masquerade: 1 # IP 伪装, 为 0 无法访问容器网络之外的网络
+
+services:
+  sys_nginxproxymanager:
+    image: jc21/nginx-proxy-manager:latest
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: "1G"
+    ports:
+      - 53:53/udp # bind dns, 如果不自建 dns 服务禁用
+      - 53:53/tcp # bind dns, 如果不自建 dns 服务禁用
+      - 80:80 # https
+      - 81:81 # nginx proxy manager
+      - 443:443 # https
+      - 8100-8199:8100-8199/tcp # 开启范围端口，根据需要配置
+      - 8100-8199:8100-8199/udp # 开启范围端口，根据需要配置
+      
+    networks:
+      - net_def
+    volumes:
+      - data:/data
+      - letsencrypt:/etc/letsencrypt
+
+volumes:
+  data:
+    name: sys_nginxProxyManager_data
+  letsencrypt:
+    name: sys_nginxProxyManager_letsencrypt

@@ -1,0 +1,35 @@
+version: '3.4'
+
+networks:
+  net_def:
+    external: true
+    driver_opts:
+      com.docker.network.bridge.enable_ip_masquerade: 1 # IP 伪装, 为 0 无法访问容器网络之外的网络
+
+services:
+  sys_bind:
+    image: sameersbn/bind:latest
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: "1G"
+    networks:
+      - net_def
+    # ports:
+    #   - 53:53/tcp # dns 服务
+    #   - 53:53/udp # dns 服务
+    #   - 10000:10000 # web UI
+    volumes:
+      - /etc/localtime:/etc/localtime
+      - data:/data
+    restart: always
+    environment:
+      - WEBMIN_INIT_SSL_ENABLED=false
+      - WEBMIN_INIT_REDIRECT_PORT=10000
+      - WEBMIN_INIT_REFERERS=${BIND_HOST} # 配置域名
+      - ROOT_PASSWORD=${BIND_ROOT_PASSWORD} # 配置 root 密码
+
+volumes:
+  data:
+    name: sys_bind_data

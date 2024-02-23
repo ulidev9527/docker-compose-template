@@ -1,0 +1,29 @@
+version: "3"
+
+networks:
+  net_def:
+    external: true
+    driver_opts:
+      com.docker.network.bridge.enable_ip_masquerade: 0 # IP 伪装, 为 0 无法访问容器网络之外的网络
+    
+services:
+  tp_mysql:
+    image: mysql:8.3.0
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: "1G"
+    volumes:
+      - data:/var/lib/mysql
+    networks:
+      - net_def
+    # ports:
+    #   - 3306:3306
+    #   - 33060:33060
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+
+volumes:
+  data:
+    name: tp_mysql_data

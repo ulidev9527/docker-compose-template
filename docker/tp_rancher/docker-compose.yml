@@ -1,0 +1,33 @@
+version: "3"
+
+networks:
+  net_def:
+    external: true
+    driver_opts:
+      com.docker.network.bridge.enable_ip_masquerade: 0 # IP 伪装, 为 0 无法访问容器网络之外的网络
+
+services:
+  tp_rancher:
+    image: rancher/rancher:latest
+    restart: unless-stopped
+    privileged: true
+    networks:
+      - net_def
+    # ports:
+    #   - 80:80
+    #   - 443:443
+    volumes:
+      - rancher:/var/lib/rancher
+      - rancher_kubelet:/var/lib/kubelet
+      - rancher_cni:/var/lib/cni
+      - rancher_log:/var/log
+
+volumes:
+  rancher:
+    name: tp_rancher
+  rancher_kubelet:
+    name: tp_rancher_kubelet
+  rancher_cni:
+    name: tp_rancher_cni
+  rancher_log:
+    name: tp_rancher_log

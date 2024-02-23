@@ -1,0 +1,70 @@
+# https://soulteary.com/2023/07/18/traefik-v3-docker-comprehensive-user-guide-basics.html
+version: "3"
+
+networks:
+  net_def:
+    external: true
+    driver_opts:
+      com.docker.network.bridge.enable_ip_masquerade: 0 # IP 伪装，为 0 无法访问配置容器网络之外的网络
+
+services:
+  tp_traefik:
+    image: traefik:latest
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: "1G"
+    restart: always
+    networks:
+      - net_def
+    # ports:
+    #   - 53:53/tcp
+    #   - 53:53/udp
+    #   - 80:80/tcp # 入口
+    #   - 80:80/udp # 入口
+    #   - 8080:8080 # WEB UI
+    command:
+      - --global.sendanonymoususage=false
+      - --global.checknewversion=false
+      - --api.insecure=true
+      - --providers.docker
+      # - "--api=true"
+      # - "--api.dashboard=true"
+      # - "--api.insecure=true"
+      # - "--api.debug=false"
+      - --ping=true
+      # - "--log.level=INFO"
+      # - "--log.format=common"
+      # - "--accesslog=false"
+      - --entrypoints.http.address=:80
+      # # - "--entrypoints.https.address=:443" # ssl 验证使用三方
+      # - "--providers.docker=true"
+      # - "--providers.docker.watch=true"
+      - --providers.docker.exposedbydefault=false # 默认不解析 需要时配置 traefik.enable=true 的容器才会进行解析
+      # - "--providers.docker.endpoint=unix:///var/run/docker.sock"
+      # - "--providers.docker.useBindPortIP=false"
+      - --providers.docker.network=net_def
+      # - "--providers.file=true"
+      # - "--providers.file.watch=true"
+      # - "--providers.file.directory=/etc/traefik/config"
+      # - "--providers.file.debugloggeneratedtemplate=true"
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.tp_traefik.entrypoints=http
+      - traefik.http.routers.tp_traefik.rule=Host(`${TRAEFIK_HOST}`)
+      - traefik.http.routers.tp_traefik.service=dashboard@internal
+      - traefik.http.routers.tp_traefik-api.entrypoints=http
+      - traefik.http.routers.tp_traefik-api.rule=Host(`${TRAEFIK_HOST}`) && PathPrefix(`/api`)
+      - traefik.http.routers.tp_traefik-api.service=api@internal
+      - traefik.http.middlewares.gzip.compress=true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock # 映射 Docker 容器
+      - data:/etc/traefik
+    healthcheck: # 心跳检测
+      test: ["CMD-SHELL", "wget -q --spider --proxy off localhost:8080/ping || exit 1"]
+      interval: 3s
+      retries: 10
+volumes:
+  data:
+    name: tp_traefik_data

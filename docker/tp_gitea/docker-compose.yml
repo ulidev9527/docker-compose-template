@@ -1,0 +1,32 @@
+version: "3"
+
+networks:
+  net_def:
+    external: true
+    driver_opts:
+      com.docker.network.bridge.enable_ip_masquerade: 1 # IP 伪装, 为 0 无法访问容器网络之外的网络
+
+services:
+  tp_gitea:
+    image: gitea/gitea:1.21.5
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: "1G"
+    restart: always
+    networks:
+      - net_def
+    # ports:
+    #   - 3000:3000
+    #   - 22:22
+    environment:
+      - USER_UID=1000
+      - USER_GID=1000
+    volumes:
+      - data:/data
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+volumes:
+  data:
+    name: tp_gitea_data
