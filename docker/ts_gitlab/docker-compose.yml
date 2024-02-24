@@ -1,0 +1,42 @@
+version: '3.6'
+
+networks:
+  net_def:
+    external: true
+    driver_opts:
+      com.docker.network.bridge.enable_ip_masquerade: 0 # IP 伪装, 为 0 无法访问容器网络之外的网络
+
+services:
+  tp_gitlab:
+    image: gitlab/gitlab-ce:latest
+    container_name: gitlab
+    restart: always
+    networks:
+      - net_def
+    hostname: ${GITLAB_HOST}
+    # ports:
+    #   - '80:80'
+    #   - '443:443'
+    #   - '22:22'
+    volumes:
+      - config:/etc/gitlab
+      - logs:/var/log/gitlab
+      - data:/var/opt/gitlab
+    shm_size: '256m'
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: "1G"
+    environment:
+      GITLAB_OMNIBUS_CONFIG: |
+        # Add any other gitlab.rb configuration here, each on its own line
+        external_url 'http://${GITLAB_HOST}'
+
+volumes:
+  config:
+    name: tp_gitlab_config
+  logs:
+    name: tp_gitlab_logs
+  data:
+    name: tp_gitlab_data

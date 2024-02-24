@@ -10,6 +10,11 @@ services:
   tp_rancher:
     image: rancher/rancher:latest
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: "1G"
     privileged: true
     networks:
       - net_def
