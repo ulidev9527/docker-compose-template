@@ -1,0 +1,29 @@
+version: '3'
+
+networks:
+  net_def:
+    external: true
+    driver_opts:
+      com.docker.network.bridge.enable_ip_masquerade: 0 # IP 伪装, 为 0 无法访问容器网络之外的网络
+
+services:
+  tp_nsqadmin:
+    image: nsqio/nsq
+    command: /nsqadmin --lookupd-http-address=${LOOKUPD_HTTP_ADDRESS}
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: "1G"
+    depends_on:
+      - tp_nsqlookupd
+    networks:
+      - net_def
+    # ports:
+    #   - 4171:4171
+
+volumes:
+  data:
+    name: tp_nsqd_data
+  certs:
+    name: tp_nsqd_certs

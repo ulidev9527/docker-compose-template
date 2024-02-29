@@ -106,7 +106,6 @@ docker compose 配置
     cat > /etc/docker/daemon.json <<EOF
     {
         "registry-mirrors": [
-            "https://dockerproxy.com",
             "https://hub-mirror.c.163.com",
             "https://mirror.baidubce.com",
             "https://ccr.ccs.tencentyun.com"
@@ -138,7 +137,6 @@ docker compose 配置
     docker run -d \
     -p 8000:8000 -p 9443:9443 -p 9000:9000 \
     --name portainer_start \
-    --restart=always \
     -v /var/run/docker.sock:/var/run/docker.sock \
     -v sys_portainer_data:/data \
     portainer/portainer-ce:latest
@@ -153,7 +151,7 @@ docker compose 配置
     然后执行:`docker run --rm -v /var/lib/docker/volumes/sys_portainer_data/_data:/data portainer/helper-reset-password`, 首次执行会先拉取一个镜像  
     输出  
     ```
-            {"level":"info","filename":"portainer.db","time":"2024-02-22T14:29:46Z","message":"loading PortainerDB"}
+    {"level":"info","filename":"portainer.db","time":"2024-02-22T14:29:46Z","message":"loading PortainerDB"}
     2024/02/22 14:29:46 Password successfully updated for user: admin
     2024/02/22 14:29:46 Use the following password to login: 4?o3Q@7b`A0vH)N<s8XjyC$lZ9d6-]U5
     ```

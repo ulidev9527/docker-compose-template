@@ -1,0 +1,27 @@
+version: "3.8"
+
+# https://docs.gitea.com/zh-cn/usage/actions/act-runner
+
+networks:
+  net_def:
+    external: true
+    driver_opts:
+      com.docker.network.bridge.enable_ip_masquerade: 1 # IP 伪装, 为 0 无法访问容器网络之外的网络
+
+services:
+  tp_runner:
+    image: gitea/act_runner:latest
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: "1G"
+    networks:
+      - net_def
+    environment:
+      GITEA_INSTANCE_URL: "${INSTANCE_URL}" # 必须 gitea 地址 
+      GITEA_RUNNER_REGISTRATION_TOKEN: "${REGISTRATION_TOKEN}" # 必须 对应token
+      GITEA_RUNNER_NAME: "${RUNNER_NAME}" # 可选 名称
+      # GITEA_RUNNER_LABELS: "${RUNNER_LABELS}" # 可选
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
