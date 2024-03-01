@@ -33,7 +33,8 @@ docker compose 配置
 
 3. 切换 `root` 用户 `$ su`  
 
-4. 关闭 `systemd-resolved` 服务
+4. 关闭 `systemd-resolved` 服务 **注: 如果不需要自建 `DNS` 服务可以忽略这一步**   
+
     ```
     systemctl stop systemd-resolved
     systemctl disable systemd-resolved
