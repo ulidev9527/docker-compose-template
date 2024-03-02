@@ -1,0 +1,25 @@
+version: "3"
+
+#  https://github.com/evildecay/etcdkeeper
+
+networks:
+  net_def:
+    external: true
+    driver_opts:
+      com.docker.network.bridge.enable_ip_masquerade: 0 # IP 伪装, 为 0 无法访问容器网络之外的网络
+
+services:
+  tp_etcdkeeper:
+    image: deltaprojects/etcdkeeper
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: "1G"
+    networks:
+      - net_def
+    environment:
+      HOST: 0.0.0.0
+      PORT: 8080
+  #  ports:
+  #  - 8080:8080
