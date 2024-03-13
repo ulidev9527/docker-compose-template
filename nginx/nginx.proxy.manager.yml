@@ -16,8 +16,6 @@ services:
           cpus: "0.5"
           memory: "1G"
     ports:
-      - 53:53/udp # bind dns, 如果不自建 dns 服务禁用
-      - 53:53/tcp # bind dns, 如果不自建 dns 服务禁用
       - 80:80 # https
       - 81:81 # nginx proxy manager
       - 443:443 # https
