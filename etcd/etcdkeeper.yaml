@@ -1,6 +1,7 @@
 version: "3"
 
-#  https://github.com/evildecay/etcdkeeper
+# etcd 可视化 web 界面
+# https://github.com/evildecay/etcdkeeper
 
 networks:
   net_def:
