@@ -7,27 +7,16 @@ networks:
       com.docker.network.bridge.enable_ip_masquerade: 0 # IP 伪装, 为 0 无法访问容器网络之外的网络
 
 services:
-  tp_nsqd:
+  nsqlookupd:
     image: nsqio/nsq
-    command: /nsqd --lookupd-tcp-address=${LOOKUPD_TCP_ADDRESS}
+    command: /nsqlookupd
     deploy:
       resources:
         limits:
           cpus: "0.5"
           memory: "1G"
-    depends_on:
-      - tp_nsqlookupd
     # ports:
-    #   - 4150:4150
-    #   - 4151:4151
+    #   - 4160:4160
+    #   - 4161:4161
     networks:
       - net_def
-    volumes:
-      - data:/data
-      - certs:/etc/ssl/certs
-
-volumes:
-  data:
-    name: tp_nsqd_data
-  certs:
-    name: tp_nsqd_certs

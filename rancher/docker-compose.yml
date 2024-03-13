@@ -7,7 +7,7 @@ networks:
       com.docker.network.bridge.enable_ip_masquerade: 0 # IP 伪装, 为 0 无法访问容器网络之外的网络
 
 services:
-  tp_rancher:
+  rancher:
     image: rancher/rancher:latest
     restart: unless-stopped
     deploy:
@@ -29,10 +29,10 @@ services:
 
 volumes:
   rancher:
-    name: tp_rancher
+    name: rancher
   rancher_kubelet:
-    name: tp_rancher_kubelet
+    name: rancher_kubelet
   rancher_cni:
-    name: tp_rancher_cni
+    name: rancher_cni
   rancher_log:
-    name: tp_rancher_log
+    name: rancher_log

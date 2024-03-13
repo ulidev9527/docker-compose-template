@@ -7,7 +7,7 @@ networks:
       com.docker.network.bridge.enable_ip_masquerade: 1 # IP 伪装, 为 0 无法访问容器网络之外的网络
 
 services:
-  sys_bind:
+  bind:
     image: sameersbn/bind:latest
     deploy:
       resources:
@@ -32,4 +32,4 @@ services:
 
 volumes:
   data:
-    name: sys_bind_data
+    name: bind_data

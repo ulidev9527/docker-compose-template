@@ -7,7 +7,7 @@ networks:
       com.docker.network.bridge.enable_ip_masquerade: 0 # IP 伪装, 为 0 无法访问容器网络之外的网络
 
 services:
-  tp_etcd:
+  etcd:
     image: bitnami/etcd
     deploy:
       resources:
@@ -22,16 +22,16 @@ services:
     volumes:
       - data:/etcd
     environment:
-      ETCD_NAME: tp_etcd                                          # etcd 的名字
+      ETCD_NAME: etcd                                          # etcd 的名字
       ALLOW_NONE_AUTHENTICATION: yes                              # 允许不用密码登录
-      ETCD_ADVERTISE_CLIENT_URLS: http://tp_etcd.self.local:2379  # 列出这个成员的客户端URL，通告给集群中的其他成员
+      ETCD_ADVERTISE_CLIENT_URLS: http://etcd.self.local:2379  # 列出这个成员的客户端URL，通告给集群中的其他成员
       ETCD_LISTEN_CLIENT_URLS: http://0.0.0.0:2379                # 用于监听客户端通讯的URL列表
       ETCD_LISTEN_PEER_URLS: http://0.0.0.0:2380                  # 用于监听伙伴通讯的URL列表
       ETCD_INITIAL_CLUSTER_TOKEN: etcd-cluster                    # 在启动期间用于 etcd 集群的初始化集群记号
-      ETCD_INITIAL_CLUSTER: tp_etcd=http://tp_etcd:2380           # 为启动初始化集群配置
-      ETCD_INITIAL_ADVERTISE_PEER_URLS: http://tp_etcd:2380       # 列出这个成员的伙伴 URL 以便通告给集群的其他成员
+      ETCD_INITIAL_CLUSTER: etcd=http://etcd:2380           # 为启动初始化集群配置
+      ETCD_INITIAL_ADVERTISE_PEER_URLS: http://etcd:2380       # 列出这个成员的伙伴 URL 以便通告给集群的其他成员
       ETCD_INITIAL_CLUSTER_STATE: new                             # 初始化集群状态
 
 volumes:
   data:
-    name: tp_etcd_data
+    name: etcd_data

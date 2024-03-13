@@ -1,31 +1,33 @@
-version: "3"
+version: '3'
 
 networks:
   net_def:
     external: true
     driver_opts:
       com.docker.network.bridge.enable_ip_masquerade: 0 # IP 伪装, 为 0 无法访问容器网络之外的网络
-    
+
 services:
-  tp_redis:
-    image: redis
+  nsqd:
+    image: nsqio/nsq
+    command: /nsqd --lookupd-tcp-address=${LOOKUPD_TCP_ADDRESS}
     deploy:
       resources:
         limits:
           cpus: "0.5"
           memory: "1G"
-    volumes:
-      - data:/data
-      - logs:/logs
+    depends_on:
+      - nsqlookupd
+    # ports:
+    #   - 4150:4150
+    #   - 4151:4151
     networks:
       - net_def
-    # ports:
-    #   - 6379:6379
-    command:
-      redis-server --requirepass ${REDIS_PASSWD}
-      
+    volumes:
+      - data:/data
+      - certs:/etc/ssl/certs
+
 volumes:
   data:
-    name: tp_redis_data
-  logs:
-    name: tp_redis_logs
+    name: nsqd_data
+  certs:
+    name: nsqd_certs

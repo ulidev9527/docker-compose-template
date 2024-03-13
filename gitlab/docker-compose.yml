@@ -7,7 +7,7 @@ networks:
       com.docker.network.bridge.enable_ip_masquerade: 0 # IP 伪装, 为 0 无法访问容器网络之外的网络
 
 services:
-  tp_gitlab:
+  gitlab:
     image: gitlab/gitlab-ce:latest
     container_name: gitlab
     restart: always
@@ -35,8 +35,8 @@ services:
 
 volumes:
   config:
-    name: tp_gitlab_config
+    name: gitlab_config
   logs:
-    name: tp_gitlab_logs
+    name: gitlab_logs
   data:
-    name: tp_gitlab_data
+    name: gitlab_data

@@ -8,7 +8,7 @@ networks:
       com.docker.network.bridge.enable_ip_masquerade: 0 # IP 伪装，为 0 无法访问配置容器网络之外的网络
 
 services:
-  tp_traefik:
+  traefik:
     image: traefik:latest
     deploy:
       resources:
@@ -51,12 +51,12 @@ services:
       # - "--providers.file.debugloggeneratedtemplate=true"
     labels:
       - traefik.enable=true
-      - traefik.http.routers.tp_traefik.entrypoints=http
-      - traefik.http.routers.tp_traefik.rule=Host(`${TRAEFIK_HOST}`)
-      - traefik.http.routers.tp_traefik.service=dashboard@internal
-      - traefik.http.routers.tp_traefik-api.entrypoints=http
-      - traefik.http.routers.tp_traefik-api.rule=Host(`${TRAEFIK_HOST}`) && PathPrefix(`/api`)
-      - traefik.http.routers.tp_traefik-api.service=api@internal
+      - traefik.http.routers.traefik.entrypoints=http
+      - traefik.http.routers.traefik.rule=Host(`${TRAEFIK_HOST}`)
+      - traefik.http.routers.traefik.service=dashboard@internal
+      - traefik.http.routers.traefik-api.entrypoints=http
+      - traefik.http.routers.traefik-api.rule=Host(`${TRAEFIK_HOST}`) && PathPrefix(`/api`)
+      - traefik.http.routers.traefik-api.service=api@internal
       - traefik.http.middlewares.gzip.compress=true
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock # 映射 Docker 容器
@@ -67,4 +67,4 @@ services:
       retries: 10
 volumes:
   data:
-    name: tp_traefik_data
+    name: traefik_data

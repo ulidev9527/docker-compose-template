@@ -7,7 +7,7 @@ networks:
       com.docker.network.bridge.enable_ip_masquerade: 0 # IP 伪装, 为 0 无法访问容器网络之外的网络
 
 services:
-  tp_jenkins:
+  jenkins:
     image: jenkins/jenkins:lts
     privileged: true
     deploy:
@@ -28,4 +28,4 @@ services:
 
 volumes:
   home:
-    name: tp_jenkins_home
+    name: jenkins_home

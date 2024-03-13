@@ -7,7 +7,7 @@ networks:
       com.docker.network.bridge.enable_ip_masquerade: 1 # IP 伪装, 为 0 无法访问容器网络之外的网络
 
 services:
-  sys_nginxproxymanager:
+  nginxproxymanager:
     image: jc21/nginx-proxy-manager:latest
     restart: unless-stopped
     deploy:
@@ -32,6 +32,6 @@ services:
 
 volumes:
   data:
-    name: sys_nginxProxyManager_data
+    name: nginxproxymanager_data
   letsencrypt:
-    name: sys_nginxProxyManager_letsencrypt
+    name: nginxproxymanager_letsencrypt
