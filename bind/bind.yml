@@ -9,6 +9,7 @@ networks:
 services:
   bind:
     image: sameersbn/bind:latest
+    restart: unless-stopped
     deploy:
       resources:
         limits:
@@ -23,7 +24,6 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime
       - data:/data
-    restart: always
     environment:
       - WEBMIN_INIT_SSL_ENABLED=false
       - WEBMIN_INIT_REDIRECT_PORT=10000

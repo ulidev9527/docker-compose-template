@@ -9,6 +9,7 @@ networks:
 services:
   redis:
     image: redis
+    restart: unless-stopped
     deploy:
       resources:
         limits:

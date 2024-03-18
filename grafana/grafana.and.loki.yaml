@@ -1,4 +1,6 @@
-version: '3'
+version: "3"
+
+# https://raw.githubusercontent.com/grafana/loki/v2.9.4/production/docker-compose.yaml
 
 networks:
   net_def:
@@ -7,24 +9,22 @@ networks:
       com.docker.network.bridge.enable_ip_masquerade: 0 # IP 伪装, 为 0 无法访问容器网络之外的网络
 
 services:
-  nsqlookupd:
-    image: nsqio/nsq
-    command: /nsqlookupd
+  loki:
+    image: grafana/loki:2.9.4
     restart: unless-stopped
     deploy:
       resources:
         limits:
           cpus: "0.5"
           memory: "1G"
-    # ports:
-    #   - 4160:4160
-    #   - 4161:4161
+    ports:
+      - 3100:3100
+    command: -config.file=/etc/loki/local-config.yaml
     networks:
       - net_def
 
-  nsqd:
-    image: nsqio/nsq
-    command: /nsqd --lookupd-tcp-address=nsqlookupd:4160
+  promtail:
+    image: grafana/promtail:2.9.4
     restart: unless-stopped
     deploy:
       resources:
@@ -32,34 +32,28 @@ services:
           cpus: "0.5"
           memory: "1G"
     depends_on:
-      - nsqlookupd
-    # ports:
-    #   - 4150:4150
-    #   - 4151:4151
-    networks:
-      - net_def
+      - loki
     volumes:
-      - data:/data
-      - certs:/etc/ssl/certs
-
-  nsqadmin:
-    image: nsqio/nsq
+      - grafana_promtail_log:/var/log
+    command: -config.file=/etc/promtail/config.yml
+    networks:
+      - net_def
+  grafana:
+    image: grafana/grafana-enterprise:latest
     restart: unless-stopped
-    command: /nsqadmin --lookupd-http-address=nsqlookupd:4161
     deploy:
       resources:
         limits:
           cpus: "0.5"
           memory: "1G"
-    depends_on:
-      - nsqlookupd
     networks:
       - net_def
     # ports:
-    #   - 4171:4171
-
+    #  - 3000:3000
+    volumes:
+      - grafana_data:/var/lib/grafana
 volumes:
-  data:
-    name: nsqd_data
-  certs:
-    name: nsqd_certs
+  grafana_promtail_log:
+    name: grafana_promtail_log
+  grafana_data:
+    name: grafana_data

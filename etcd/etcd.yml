@@ -9,6 +9,7 @@ networks:
 services:
   etcd:
     image: bitnami/etcd
+    restart: unless-stopped
     deploy:
       resources:
         limits:

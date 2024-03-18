@@ -12,6 +12,7 @@ networks:
 services:
   etcdkeeper:
     image: deltaprojects/etcdkeeper
+    restart: unless-stopped
     deploy:
       resources:
         limits:

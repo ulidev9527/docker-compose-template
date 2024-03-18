@@ -9,6 +9,7 @@ networks:
 services:
   nsqadmin:
     image: nsqio/nsq
+    restart: unless-stopped
     command: /nsqadmin --lookupd-http-address=${LOOKUPD_HTADDRESS}
     deploy:
       resources:

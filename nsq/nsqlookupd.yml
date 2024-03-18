@@ -9,6 +9,7 @@ networks:
 services:
   nsqlookupd:
     image: nsqio/nsq
+    restart: unless-stopped
     command: /nsqlookupd
     deploy:
       resources:
