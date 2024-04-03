@@ -17,10 +17,10 @@ services:
           memory: "1G"
     networks:
       - net_def
-    # ports:
-    #   - 53:53/tcp # dns 服务
-    #   - 53:53/udp # dns 服务
-    #   - 10000:10000 # web UI
+    ports:
+      - 53:53/tcp # dns 服务
+      - 53:53/udp # dns 服务
+      - 10000:10000 # web UI
     volumes:
       - /etc/localtime:/etc/localtime
       - data:/data

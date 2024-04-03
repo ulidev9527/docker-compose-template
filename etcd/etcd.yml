@@ -25,7 +25,7 @@ services:
     environment:
       ETCD_NAME: etcd                                          # etcd 的名字
       ALLOW_NONE_AUTHENTICATION: yes                              # 允许不用密码登录
-      ETCD_ADVERTISE_CLIENT_URLS: http://etcd.self.local:2379  # 列出这个成员的客户端URL，通告给集群中的其他成员
+      ETCD_ADVERTISE_CLIENT_URLS: http://0.0.0.0:2379  # 列出这个成员的客户端URL，通告给集群中的其他成员
       ETCD_LISTEN_CLIENT_URLS: http://0.0.0.0:2379                # 用于监听客户端通讯的URL列表
       ETCD_LISTEN_PEER_URLS: http://0.0.0.0:2380                  # 用于监听伙伴通讯的URL列表
       ETCD_INITIAL_CLUSTER_TOKEN: etcd-cluster                    # 在启动期间用于 etcd 集群的初始化集群记号
