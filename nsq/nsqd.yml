@@ -10,14 +10,12 @@ services:
   nsqd:
     image: nsqio/nsq
     restart: unless-stopped
-    command: /nsqd --lookupd-tcp-address=${LOOKUPD_TCP_ADDRESS}
+    command: /nsqd --lookupd-tcp-address=nsqlookupd:4160
     deploy:
       resources:
         limits:
           cpus: "0.5"
           memory: "1G"
-    depends_on:
-      - nsqlookupd
     # ports:
     #   - 4150:4150
     #   - 4151:4151
