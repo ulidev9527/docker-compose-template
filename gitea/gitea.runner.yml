@@ -16,6 +16,7 @@ services:
         limits:
           cpus: '0.5'
           memory: "1G"
+    restart: always
     networks:
       - net_def
     environment:

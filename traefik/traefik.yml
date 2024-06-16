@@ -29,26 +29,21 @@ services:
       - --global.checknewversion=false
       - --api.insecure=true
       - --providers.docker
-      # - "--api=true"
-      # - "--api.dashboard=true"
-      # - "--api.insecure=true"
-      # - "--api.debug=false"
+      # - --api=true
+      # - --api.dashboard=true
+      # - --api.insecure=true
+      # - --api.debug=false
       - --ping=true
-      # - "--log.level=INFO"
-      # - "--log.format=common"
-      # - "--accesslog=false"
+      # - --log.level=INFO
+      # - --log.format=common
+      # - --accesslog=false
       - --entrypoints.http.address=:80
-      # # - "--entrypoints.https.address=:443" # ssl 验证使用三方
-      # - "--providers.docker=true"
-      # - "--providers.docker.watch=true"
-      - --providers.docker.exposedbydefault=false # 默认不解析 需要时配置 traefik.enable=true 的容器才会进行解析
-      # - "--providers.docker.endpoint=unix:///var/run/docker.sock"
-      # - "--providers.docker.useBindPortIP=false"
+      - --entrypoints.https.address=:443
+      - --providers.docker=true
+      - --providers.docker.watch=true
+      - --providers.docker.exposedbydefault=false # 默认不解析 需要时配置 traefik.enable = true 的容器才会进行解析
+      - --providers.docker.endpoint=unix:///var/run/docker.sock
       - --providers.docker.network=net_def
-      # - "--providers.file=true"
-      # - "--providers.file.watch=true"
-      # - "--providers.file.directory=/etc/traefik/config"
-      # - "--providers.file.debugloggeneratedtemplate=true"
     labels:
       - traefik.enable=true
       - traefik.http.routers.traefik.entrypoints=http
