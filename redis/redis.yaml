@@ -22,7 +22,7 @@ services:
     # ports:
     #   - 6379:6379
     command:
-      redis-server --requirepass ${REDIS_PASSWORD} # 密码注意尽量不要使用特殊字符串<>#等
+      redis-server --requirepass ${PASS} # 密码注意尽量不要使用特殊字符串<>#等
       
 volumes:
   data:
