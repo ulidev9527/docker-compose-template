@@ -5,8 +5,8 @@ networks:
     external: true
     
 services:
-  redis:
-    image: redis:7.2.4
+  squid:
+    image: ubuntu/squid:latest
     restart: unless-stopped
     deploy:
       resources:
@@ -14,14 +14,10 @@ services:
           cpus: "0.5"
           memory: "1G"
     volumes:
-      - data:/data
+      - data:/etc/squid/squid.conf
     networks:
       - net_def
-    # ports:
-    #   - 6379:6379
-    command:
-      redis-server --requirepass ${PASS} # 密码注意尽量不要使用特殊字符串<>#等
       
 volumes:
   data:
-    name: redis_data
+    name: ubuntu_squid_data

@@ -1,0 +1,60 @@
+# 个人使用
+auth_enabled: false
+
+server:
+  http_listen_port: 3100 # http_listen_port: 配置HTTP监听端口号为3100。
+
+ingester: # 配置Loki的ingester部分，用于接收和处理日志数据。
+  chunk_idle_period: 1h # 配置日志块的空闲时间为1小时。如果一个日志块在这段时间内没有收到新的日志数据，则会被刷新。
+  max_chunk_age: 1h # 配置日志块的最大年龄为1小时。当一个日志块达到这个年龄时，所有的日志数据都会被刷新。
+  chunk_target_size: 2048576 # 配置日志块的目标大小为2048576字节（约为1.5MB）。如果日志块的空闲时间或最大年龄先达到，Loki会首先尝试将日志块刷新到目标大小。
+  chunk_retain_period: 30s # 配置日志块的保留时间为30秒。这个时间必须大于索引读取缓存的TTL（默认为5分钟）。
+  max_transfer_retries: 0 # 配置日志块传输的最大重试次数为0，即禁用日志块传输。
+
+common:
+  path_prefix: /loki
+  storage:
+    filesystem:
+      chunks_directory: /loki/chunks
+      rules_directory: /loki/rules
+  replication_factor: 1
+  ring:
+    kvstore:
+      store: inmemory
+
+schema_config: # 配置Loki的schema部分，用于管理索引和存储引擎。
+  configs: # 配置索引和存储引擎的信息。
+    - from: 2020-10-24 # 配置索引和存储引擎的起始时间。
+      store: boltdb-shipper # 配置存储引擎为boltdb-shipper，即使用BoltDB存储引擎。
+      object_store: filesystem # 配置对象存储引擎为filesystem，即使用文件系统存储。
+      schema: v11 # 配置schema版本号为v11。
+      index: # 配置索引相关的信息。
+        prefix: index_ # 配置索引文件的前缀为index_。
+        period: 24h # 配置索引文件的周期为24小时。
+
+storage_config: # 配置Loki的存储引擎相关的信息。
+  boltdb_shipper: # 配置BoltDB存储引擎的信息。
+    cache_ttl: 240h # 配置BoltDB缓存的TTL为240小时。
+
+compactor: # 配置日志压缩器的信息。
+  shared_store: filesystem # 配置共享存储引擎为filesystem，即使用文件系统存储。
+
+limits_config: # 配置Loki的限制策略。
+  reject_old_samples: true # 配置是否拒绝旧的日志数据。
+  reject_old_samples_max_age: 168h # 配置拒绝旧的日志数据的最大年龄为168小时。
+  ingestion_rate_mb: 64 # 配置日志数据的最大摄入速率为64MB/s。
+  ingestion_burst_size_mb: 128 # 配置日志数据的最大摄入突发大小为128MB。
+  max_streams_matchers_per_query: 100000 # 配置每个查询的最大流匹配器数量为100000。
+  max_entries_limit_per_query: 50000 # 配置每个查询的最大条目限制为50000。
+
+chunk_store_config: # 配置日志数据的存储策略。
+  #  max_look_back_period: 1440h
+  max_look_back_period: 240h # 配置最大回溯时间为240小时。
+
+table_manager: # 配置Loki的表管理器。
+  retention_deletes_enabled: true # 配置是否启用保留期删除。
+  #  retention_period: 1440h
+  retention_period: 240h # 配置保留期为240小时。
+
+ruler:
+  alertmanager_url: http://localhost:9093
