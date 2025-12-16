@@ -1,27 +1,26 @@
-version: "3"
-
 networks:
   net_def:
     external: true
-    driver_opts:
-      com.docker.network.bridge.enable_ip_masquerade: 0 # IP 伪装, 为 0 无法访问容器网络之外的网络
 
 services:
   etcd:
-    image: bitnami/etcd
+    image: bitnami/etcd:3.5.16
     restart: unless-stopped
     deploy:
       resources:
         limits:
-          cpus: "0.5"
+          cpus: "1"
           memory: "1G"
     networks:
       - net_def
-    # ports:
-    #   - 2379:2379
+    expose:
+      - 2379
+      - 2380
+    ports:
+      - 2379:2379
     #   - 2380:2380
     volumes:
-      - data:/etcd
+      - ~/zsys/etcd/data:/etcd
     environment:
       ETCD_NAME: etcd                                          # etcd 的名字
       ALLOW_NONE_AUTHENTICATION: yes                              # 允许不用密码登录
@@ -32,7 +31,3 @@ services:
       ETCD_INITIAL_CLUSTER: etcd=http://etcd:2380           # 为启动初始化集群配置
       ETCD_INITIAL_ADVERTISE_PEER_URLS: http://etcd:2380       # 列出这个成员的伙伴 URL 以便通告给集群的其他成员
       ETCD_INITIAL_CLUSTER_STATE: new                             # 初始化集群状态
-
-volumes:
-  data:
-    name: etcd_data

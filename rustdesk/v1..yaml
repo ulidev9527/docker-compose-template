@@ -1,0 +1,36 @@
+version: '3'
+services:
+  hbbs:
+    container_name: hbbs
+    image: rustdesk/rustdesk-server:1.1.14
+    command: hbbs
+    ports:
+      - "21115:21115"
+      - "21116:21116"
+      - "21116:21116/udp"
+      - "21118:21118"
+    # volumes:
+      # - ./hbbs:/root
+    environment:
+      - RELAY=localhost:21117  # 重要：指定中继服务器地址
+      - ENCRYPTED_ONLY=0               # 推荐开启强制加密
+    restart: always
+    # networks:
+      # - rustdesk-net
+
+  hbbr:
+    container_name: hbbr
+    image: rustdesk/rustdesk-server:1.1.14
+    command: hbbr
+    ports:
+      - "21117:21117"
+      - "21119:21119"
+    # volumes:
+      # - ./hbbr:/root
+    restart: always
+    # networks:
+      # - rustdesk-net
+
+networks:
+  rustdesk-net:
+    driver: overlay

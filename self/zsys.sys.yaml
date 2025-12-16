@@ -1,0 +1,287 @@
+version: "3.9"
+ 
+networks:
+  zsys:
+    external: true
+  zgrafana:
+    external: true
+  zdb:
+    external: true
+
+services:
+
+# 日志 👇
+  loki:
+    image: grafana/loki:3.2.0
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "4"
+          memory: "4G"
+    ports:
+      - 3100:3100
+    volumes:
+      - /zsys/grafana/loki_tmp:/tmp/loki
+      - /zsys/grafana/loki_data_retention:/data/retention
+      - /zsys/grafana/loki.conf.yaml:/etc/loki/local-config.yaml
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - zgrafana
+    user: "0"
+
+  promtail:
+    image: grafana/promtail:3.2.0
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "4"
+          memory: "4G"
+    depends_on:
+      - loki
+    volumes:
+      - /zsys/grafana/promtail.conf.yaml:/etc/promtail/config.yml
+      - /var/log:/var/log
+    command: -config.file=/etc/promtail/config.yml
+    networks:
+      - zgrafana
+# 日志 👆
+
+# 监控 👇
+
+  prometheus: # 监控统一调度
+    image: prom/prometheus:v2.54.1
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: "2G"
+    expose:
+      - 9090
+    networks:
+      - zsys
+      - zgrafana
+    volumes:
+      - /zsys/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - /zsys/prometheus/prometheus_data:/prometheus
+
+  node-exporter: # 主机监控
+    image: prom/node-exporter:v1.8.2
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: "1G"
+    expose:
+      - 9100
+    networks:
+      - zgrafana
+
+  cadvisor: # 容器监控
+    image: gcr.io/cadvisor/cadvisor:v0.49.1
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: "1G"
+    privileged: true
+    devices:
+      - /dev/kmsg
+    expose:
+      - 8080
+    networks:
+      - zgrafana
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+
+# 监控 👆
+
+# 数据可视化
+  grafana:
+    image: grafana/grafana-enterprise:11.2.0
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: "2G"
+    networks:
+      - zsys
+      - zgrafana
+    user: "0"
+    expose:
+      - 3000
+    # ports:
+    #   - 8080:3000
+    volumes:
+      - /zsys/grafana/grafana_data:/var/lib/grafana
+      
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=zsys
+      - traefik.http.routers.grafana.rule=Host(`grafana.sys.${BASE_DOMAIN}`)
+      - traefik.http.routers.grafana.tls=true
+      - traefik.http.routers.grafana.tls.certresolver=${TLS_CERT_RESOLVER}
+      - traefik.http.services.grafana.loadbalancer.server.port=3000
+      - traefik.http.middlewares.gzip.compress=true
+      - traefik.http.middlewares.redir-https.redirectscheme.scheme=https
+      - traefik.http.middlewares.redir-https.redirectscheme.permanent=true
+
+# 文件管理器
+  filebrowser:
+    image: filebrowser/filebrowser:v2.31.2
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: "1G"
+    volumes:
+      - /zsys:/srv
+      - /zsys/filebrowser/database.db:/database.db
+    expose:
+      - 80
+    networks:
+      - zsys
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=zsys
+      - traefik.http.routers.filebrowser.rule=Host(`filebrowser.sys.${BASE_DOMAIN}`)
+      - traefik.http.routers.filebrowser.tls=true
+      - traefik.http.routers.filebrowser.tls.certresolver=${TLS_CERT_RESOLVER}
+      - traefik.http.services.filebrowser.loadbalancer.server.port=80
+      - traefik.http.middlewares.redir-https.redirectscheme.scheme=https
+      - traefik.http.middlewares.redir-https.redirectscheme.permanent=true
+
+# 数据库管理
+  dbgate:
+    image: dbgate/dbgate:5.5.6
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: "2G"
+    restart: always
+    networks:
+      - zsys
+      - zdb
+    expose:
+      - 3000
+    volumes:
+      - /zsys/dbgate/data:/root/.dbgate
+    environment:
+      - LOGIN=admin
+      - PASSWORD=${DBGATE_PASSWORD}
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=zsys
+      - traefik.http.routers.dbgate.rule=Host(`dbgate.sys.${BASE_DOMAIN}`)
+      - traefik.http.routers.dbgate.tls=true
+      - traefik.http.routers.dbgate.tls.certresolver=${TLS_CERT_RESOLVER}
+      - traefik.http.services.dbgate.loadbalancer.server.port=3000
+      - traefik.http.middlewares.redir-https.redirectscheme.scheme=https
+      - traefik.http.middlewares.redir-https.redirectscheme.permanent=true
+
+
+# 容器管理
+# 临时工具
+  portainer:
+    image: portainer/portainer-ce:2.21.3
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "4"
+          memory: "2G"
+    expose:
+      - 8000 # listener
+      - 9443 # https
+      - 9000 # http
+    networks:
+      - zsys
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /zsys/portainer/data:/data
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.portainer.rule=Host(`portainer.sys.${BASE_DOMAIN}`)
+      - traefik.http.routers.portainer.tls=true
+      - traefik.http.routers.portainer.tls.certresolver=${TLS_CERT_RESOLVER}
+      - traefik.http.services.portainer.loadbalancer.server.port=9000
+      - traefik.http.middlewares.gzip.compress=true
+      - traefik.http.middlewares.redir-https.redirectscheme.scheme=https
+      - traefik.http.middlewares.redir-https.redirectscheme.permanent=true
+
+# 路由
+  traefik:
+    # The official v3 Traefik docker image
+    image: traefik:v3.1.6
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: "2G"
+
+    networks:
+      - zsys
+    # Enables the web UI and tells Traefik to listen to docker
+    command: 
+      # - --configFile=/zsys/traefik/static.conf.yaml # 配置文件
+      - --api.insecure=true # api 安全
+      - --accesslog=true # 开启日志
+      - --metrics.prometheus=true # 开启监控
+      - --entryPoints.metrics.address=:8082
+      - --metrics.prometheus.entryPoint=metrics
+      - --providers.docker=true
+      - --providers.docker.watch=true
+      - --providers.docker.exposedbydefault=false
+      - --providers.file.directory=/zsys/traefik/dynamic_config
+      - --providers.file.watch=true
+      - --entryPoints.http.address=:80
+      - --entryPoints.https.address=:443
+      - --certificatesresolvers.cdlongye.acme.dnschallenge=true
+      - --certificatesresolvers.${TLS_CERT_RESOLVER}.acme.email=${TLS_ACME_MAIL}
+      - --certificatesresolvers.${TLS_CERT_RESOLVER}.acme.storage=/zsys/traefik/acme.json
+      - --certificatesresolvers.${TLS_CERT_RESOLVER}.acme.dnsChallenge.provider=alidns
+    environment:
+      - ALICLOUD_ACCESS_KEY=${ALICLOUD_DNS_ACCESS_KEY}
+      - ALICLOUD_SECRET_KEY=${ALICLOUD_DNS_SECRET_KEY}
+    ports:
+      # The HTTP port
+      - 80:80
+      - 443:443
+      # The Web UI (enabled by --api.insecure=true)
+      # - "8080:8080" # use treafix.${BASE_DOMAIN}
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.traefik.rule=Host(`traefik.sys.${BASE_DOMAIN}`)
+      - traefik.http.routers.traefik.service=dashboard@internal
+      - traefik.http.routers.traefik.tls=true
+      - traefik.http.routers.traefik.tls.certresolver=${TLS_CERT_RESOLVER}
+      - traefik.http.routers.traefik-api.rule=Host(`traefik.sys.${BASE_DOMAIN}`) && PathPrefix(`/api`)
+      - traefik.http.routers.traefik-api.service=api@internal
+      - traefik.http.routers.traefik-api.tls=true
+      - traefik.http.routers.traefik-api.tls.certresolver=${TLS_CERT_RESOLVER}
+      - traefik.http.middlewares.gzip.compress=true
+      - traefik.http.middlewares.redir-https.redirectscheme.scheme=https
+      - traefik.http.middlewares.redir-https.redirectscheme.permanent=true
+      # - traefik.http.routers.traefik-secure.entrypoints=https
+      # - traefik.http.routers.traefik-secure.rule=Host(`traefik.sys.${BASE_DOMAIN}`)
+      # - traefik.http.routers.traefik-secure.middlewares=auth
+      # - traefik.http.routers.traefik-secure.service=api@internal
+      # - traefik.http.routers.traefik-secure.tls=true
+      # - traefik.http.routers.traefik-secure.tls.certresolver=${TLS_CERT_RESOLVER}
+      # - traefik.http.routers.traefik-secure.tls.domains[0].main=${BASE_DOMAIN}
+      # - traefik.http.routers.traefik-secure.tls.domains[0].sans=*.${BASE_DOMAIN}
+    volumes:
+      - /zsys/traefik:/zsys/traefik
+      # So that Traefik can listen to the Docker events
+      - /var/run/docker.sock:/var/run/docker.sock
